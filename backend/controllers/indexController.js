@@ -1,8 +1,11 @@
 const { catchError } = require("../middlewares/catchError")
 const UserModel = require('../models/userModel')
+const categoryModel = require("../models/categoryModel")
 const ProductModel = require('../models/productModel')
 const QueryModel = require("../models/QueryModel")
 const otpModel = require("../models/otpModel")
+const ratingModel = require("../models/ratingModel")
+const reviewModel = require("../models/reviewModel")
 const { Twilio } = require("twilio");
 
 
@@ -37,22 +40,6 @@ exports.usersignup = catchError(async (req, res, next) => {
       // Invalid OTP
       return res.status(401).json({ success: false, error: "Invalid OTP" });
     }
-  } else {
-    // Generate OTP if userOTP is not provided
-    const otp = generateOtp();
-
-    // Save OTP along with user's phone number
-    await otpModel.create({ phoneNumber, otp });
-
-    // Send OTP via Twilio
-    await client.messages.create({
-      body: `Your OTP for signup is: ${otp}`,
-      from: process.env.TWILIO_PHONE_NUMBER,
-      to: phoneNumber
-    });
-
-    // Retrieve OTP document for verification
-    otpDocument = await otpModel.findOne({ phoneNumber, otp });
   }
 
   // Proceed with user creation if OTP is valid
@@ -92,39 +79,95 @@ exports.currentuser = catchError(async (req, res, next) => {
   const user = await UserModel.findById(req.id).exec()
   console.log(user);
   res.json({ user })
+})
 
-
+exports.alluser = catchError(async (req, res, next) => {
+  const alluser = await UserModel.find().exec()
+  res.json({ alluser })
 })
 
 // upload.single("post"),
-exports.postupload = catchError(async (req, res, next) => {
+exports.productupload = catchError(async (req, res, next) => {
   const user = await UserModel.findById(req.id).exec()
+  if (!user) {
+    return next(new ErrorHandler("user not found with this email address", 404))
+  }
   const postData = await ProductModel.create({
-    images: req.file.filename,
+    image: req.file.filename,
     price: req.body.price,
     user: user._id,
     Description: req.body.Description,
-    Productname: req.body.Productname
+    title: req.body.title,
+    discountedPrice: req.body.discountedPrice,
+    discountepersent: req.body.discountepersent,
+    quantity: req.body.quantity,
+    brand: req.body.brand,
+    ratings: req.body.ratings,
+    reviews: req.body.reviews,
+    numRatings: req.body.numRatings,
+    category: req.body.categoryId 
   })
   user.Products.push(postData._id)
   await user.save()
   res.json(user)
 })
 
+exports.category = catchError(async (req, res, next) => {
+  const { name } = req.body;
+  const category = new categoryModel({ name });
+  await category.save();
+  res.status(201).json(category);
+})
+
+exports.ratings = catchError(async (req, res, next) => {
+  const user = await UserModel.findById(req.id).exec();
+  if (!user) {
+    return next(new ErrorHandler("user not found with this email address", 404))
+  }
+
+  const { productId, rating: ratingValue } = req.body;
+
+  // Creating a new rating document
+  const ratingData = await ratingModel.create({
+    user: user._id,
+    product: productId,
+    rating: ratingValue
+  });
+
+  // Pushing the created rating's id to the product's ratings array
+  await ProductModel.findByIdAndUpdate(productId, { $push: { ratings: ratingData._id } });
+
+  res.json(ratingData);
+});
+
+exports.review = catchError(async (req, res, next) => {
+  const user = await UserModel.findById(req.id).exec();
+  if (!user) {
+    return next(new ErrorHandler("user not found with this email address", 404))
+  }
+
+  const { productId, review: reviewText } = req.body;
+
+  // Creating a new rating document
+  const reviewData = await reviewModel.create({
+    user: user._id,
+    product: productId,
+    review: reviewText
+  });
+
+  // Pushing the created rating's id to the product's ratings array
+  await ProductModel.findByIdAndUpdate(productId, { $push: { reviews: reviewData._id } });
+
+  res.json(reviewData);
+});
+
 exports.studentsendmail = catchError(async function (req, res, next) {
   const student = await UserModel.findOne({ email: req.body.email }).exec()
   if (!student) return next(new ErrorHandler("user not found with this email address", 404))
-  // const url = `${req.protocol}://${req.get("host")}/student/forget-link/${student._id}`
-  sendmail(req, res, next)
-  const queryDataData = await QueryModel.create({
-    Queryemail: req.body.email,
-    user: student._id,
-    name: req.body.name,
-    message: req.body.message
-  })
-  student.Queries.push(queryDataData._id)
+  const url = "Thank you for your message. Your message has been received, and we will get back to you shortly"
+  sendmail(req, res, next, url)
   await student.save()
-  res.json({ student })
+  res.json({ student, url })
 })
 
 
