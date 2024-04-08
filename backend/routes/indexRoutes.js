@@ -1,5 +1,5 @@
 const express = require('express');
-const { homepage, usersignout, usersignup, usersignin, postupload, currentuser, studentsendmail, sendotp } = require('../controllers/indexController');
+const { homepage, usersignout, usersignup, usersignin,  currentuser, studentsendmail, sendotp, alluser, productupload, ratings, review, category } = require('../controllers/indexController');
 const router = express.Router();
 const { isAuthenticated } = require("../middlewares/auth")
 const upload = require("../utils/Multer")
@@ -16,6 +16,9 @@ router.post('/user/send-otp', sendotp)
 
 router.post('/user/currentuser',isAuthenticated, currentuser)
 
+router.post('/user/alluser', alluser)
+
+
 
 // post /user/singup
 router.post('/user/signin', usersignin)
@@ -23,7 +26,14 @@ router.post('/user/signin', usersignin)
 // /user/singOut
 router.get('/user/signout',isAuthenticated, usersignout)
 
-router.post('/user/uploadpost',isAuthenticated,upload.single("images"), postupload)
+router.post('/user/createcategory',isAuthenticated,upload.single("images"), category)
+
+
+router.post('/user/uploadproduct',isAuthenticated,upload.single("images"), productupload)
+
+router.post('/user/rating',isAuthenticated, ratings)
+
+router.post('/user/review',isAuthenticated, review)
 
 
 
