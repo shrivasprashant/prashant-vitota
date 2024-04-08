@@ -11,7 +11,6 @@ import All from "../portfolio/All";
 import Register from "../authentication/Register";
 import Log from "../authentication/Log";
 import { useSelector } from "react-redux";
-import store from "../../redux/store";
 import ContactForm from "../pages/ContactForm";
 
 

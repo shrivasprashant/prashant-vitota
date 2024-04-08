@@ -48,6 +48,7 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      
       const response = await axios.post(`${USER_API_END_POINT}/user/signup`, {
         name, email, phoneNumber, password, otp
       })

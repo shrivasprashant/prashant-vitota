@@ -128,18 +128,23 @@ exports.studentsendmail = catchError(async function (req, res, next) {
 })
 
 
-exports.sendotp = catchError(async (req, res, next) => {
-  const { phoneNumber } = req.body;
-  const otp = generateOtp();
-
-  await otpModel.create({ phoneNumber, otp });
-
-  await client.messages.create({
-    body: `LO BHAIYA TUMHARI OTP DIDI AA GAYI😂 ${otp}`,
-    from: process.env.TWILIO_PHONE_NUMBER,
-    to: phoneNumber
-  });
-
-  res.status(200).json({ success: true, message: "OTP sent successfully" });
+exports.sendotp = (async (req, res, next) => {
+   try {
+    const { phoneNumber } = req.body;
+    const otp = generateOtp();
+  
+    await otpModel.create({ phoneNumber, otp });
+  
+    await client.messages.create({
+      body: `LO BHAIYA TUMHARI OTP DIDI AA GAYI😂 ${otp}`,
+      from: process.env.TWILIO_PHONE_NUMBER,
+      to: phoneNumber
+    });
+    
+  
+    res.status(200).json({ success: true, message: "OTP sent successfully" });
+   } catch (error) {
+    console.log(error)
+   }
 })
 

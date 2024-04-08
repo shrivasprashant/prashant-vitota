@@ -19,10 +19,7 @@ export const userSlice = createSlice({
       // state.logoutuser = action.payload
       state.user = null;
     }
-
-
-  }
-    
+  } 
 })
 
 // Action creators are generated for each case reducer function
