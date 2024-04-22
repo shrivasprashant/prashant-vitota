@@ -1,17 +1,13 @@
 const { catchError } = require("../middlewares/catchError")
 const UserModel = require('../models/userModel')
 const categoryModel = require("../models/categoryModel")
-const ProductModel = require('../models/productModel')
 const QueryModel = require("../models/QueryModel")
 const otpModel = require("../models/otpModel")
-const ratingModel = require("../models/ratingModel")
-const reviewModel = require("../models/reviewModel")
 const { Twilio } = require("twilio");
 
 
 const ErrorHandler = require("../utils/ErrorHandler")
 const { sendToken } = require("../utils/sendToken")
-const upload = require("../utils/Multer")
 const { sendmail } = require("../utils/nodemailer")
 
 const client = new Twilio(process.env.ACCOUNT_SID, process.env.AUTH_TOKEN);
@@ -63,9 +59,13 @@ exports.usersignup = catchError(async (req, res, next) => {
 
 exports.usersignin = catchError(async (req, res, next) => {
   const user = await UserModel.findOne({ email: req.body.email }).select("+password")
+
   if (!user) return next(new ErrorHandler("user not found with this email address", 404))
+
   const isMatch = user.comparepassword(req.body.password);
+
   if (!isMatch) return next(new ErrorHandler("wrong credential", 500))
+
   sendToken(user, 200, res)
 })
 
@@ -86,31 +86,20 @@ exports.alluser = catchError(async (req, res, next) => {
   res.json({ alluser })
 })
 
-// upload.single("post"),
-exports.productupload = catchError(async (req, res, next) => {
-  const user = await UserModel.findById(req.id).exec()
-  if (!user) {
-    return next(new ErrorHandler("user not found with this email address", 404))
-  }
-  const postData = await ProductModel.create({
-    image: req.file.filename,
-    price: req.body.price,
-    user: user._id,
-    Description: req.body.Description,
-    title: req.body.title,
-    discountedPrice: req.body.discountedPrice,
-    discountepersent: req.body.discountepersent,
-    quantity: req.body.quantity,
-    brand: req.body.brand,
-    ratings: req.body.ratings,
-    reviews: req.body.reviews,
-    numRatings: req.body.numRatings,
-    category: req.body.categoryId 
-  })
-  user.Products.push(postData._id)
-  await user.save()
-  res.json(user)
+
+
+
+
+
+
+
+
+exports.updateuser = catchError(async (req, res, next) => {
+  const { id } = req.params;
+  const user = await UserModel.findByIdAndUpdate(id, req.body , {new:true});
+  res.status(200).json(product);
 })
+
 
 exports.category = catchError(async (req, res, next) => {
   const { name } = req.body;
@@ -119,26 +108,7 @@ exports.category = catchError(async (req, res, next) => {
   res.status(201).json(category);
 })
 
-exports.ratings = catchError(async (req, res, next) => {
-  const user = await UserModel.findById(req.id).exec();
-  if (!user) {
-    return next(new ErrorHandler("user not found with this email address", 404))
-  }
 
-  const { productId, rating: ratingValue } = req.body;
-
-  // Creating a new rating document
-  const ratingData = await ratingModel.create({
-    user: user._id,
-    product: productId,
-    rating: ratingValue
-  });
-
-  // Pushing the created rating's id to the product's ratings array
-  await ProductModel.findByIdAndUpdate(productId, { $push: { ratings: ratingData._id } });
-
-  res.json(ratingData);
-});
 
 exports.review = catchError(async (req, res, next) => {
   const user = await UserModel.findById(req.id).exec();
@@ -186,3 +156,25 @@ exports.sendotp = catchError(async (req, res, next) => {
   res.status(200).json({ success: true, message: "OTP sent successfully" });
 })
 
+
+
+// exports.ratings = catchError(async (req, res, next) => {
+//   const user = await UserModel.findById(req.id).exec();
+//   if (!user) {
+//     return next(new ErrorHandler("user not found with this email address", 404))
+//   }
+
+//   const { productId, rating: ratingValue } = req.body;
+
+//   // Creating a new rating document
+//   const ratingData = await ratingModel.create({
+//     user: user._id,
+//     product: productId,
+//     rating: ratingValue
+//   });
+
+//   // Pushing the created rating's id to the product's ratings array
+//   await ProductModel.findByIdAndUpdate(productId, { $push: { ratings: ratingData._id } });
+
+//   res.json(ratingData);
+// });

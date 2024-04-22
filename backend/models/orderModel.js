@@ -1,77 +1,58 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
+const { Schema } = mongoose;
 
-const ProductSchema = new mongoose.Schema({
-    user: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User"
-    },
-
-    orderItems:[{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "orderitems"
-    }],
-
-    orderDate:[{
-        type:Date,
-        required:true,
-        default:Date.now()
-    }],
-
-    deliveryDate:{
-        type:Date
-    },
-    shipingAddress:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "addresses"
-    },
-
-    paymentDetails:{
-        paymentMethod:{
-            type:String,
+const paymentMethods = {
+    values: ['card', 'cash'],
+    message: 'enum validator failed for payment Methods'
+}
+const orderSchema = new Schema(
+    {
+        items: {
+            type: [Schema.Types.Mixed],
+            required: true
+        },  
+        totalAmount: {
+            type: Number
         },
-        transactionId:{
-            type:String
+        totalItems: {
+            type: Number
         },
-        paymentId:{
-            type:String
+        user: {
+            type: Schema.Types.ObjectId,
+            ref: 'User',
+            required: true
         },
-        paymentStatus:{
-            type:String,
-            default:"pending"
+        paymentMethod: {
+            type: String,
+            required: true,
+            enum: paymentMethods
+        },
+        paymentStatus: {
+            type: String,
+            default: 'pending'
+        },
+        status: {
+            type: String,
+            default: 'pending'
+        },
+        selectedAddress: {
+            type: Schema.Types.Mixed,
+            required: true
         },
     },
+    { timestamps: true }
+);
 
-    totalPrice:{
-        type:Number,
-        required:true
-    },
-
-    totalDiscountedPrice:{
-        type:Number,
-        required:true
-    },
-
-    discounte:{
-        type:Number,
-        required:true
-    },
-
-    orderStatus:{
-        type:String,
-        required:true,
-        default:"pending"
-    },
-
-    totalitem:{
-        type:Number,
-        required:true
-    },
-
-    createdAt:{
-        type:Date,
-        default:Date.now()
-    }
-
+const virtual = orderSchema.virtual('id');
+virtual.get(function () {
+    return this._id;
 });
-const order =  mongoose.model("orders", ProductSchema);
-module.exports = order
+orderSchema.set('toJSON', {
+    virtuals: true,
+    versionKey: false,
+    transform: function (doc, ret) {
+        delete ret._id;
+    },
+});
+
+exports.Order = mongoose.model('Order', orderSchema);

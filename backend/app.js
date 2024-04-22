@@ -13,7 +13,8 @@ app.use(logger("tiny"))
 
 const corss ={
   origin:"http://localhost:5173",
-  Credential:true
+  Credential:true,
+  exposedHeaders:["x-total-count"]
 }
 
 app.use(cors(corss));
@@ -35,6 +36,13 @@ app.use(session({
 app.use(cookieparser());
 //routes
 app.use('/', require("./routes/indexRoutes"))
+app.use('/card', require("./routes/cardRoutes"))
+app.use('/order', require("./routes/orderRoutes"))
+app.use('/product', require("./routes/productRoutes"))
+app.use('/category', require("./routes/categoryRoutes"))
+
+
+
 
 
 
