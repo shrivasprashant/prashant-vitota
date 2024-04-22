@@ -11,7 +11,7 @@ const UserSchema = new mongoose.Schema(
 
     phoneNumber: {
       type: String,
-      unique: [true,],
+      unique: true,
       required: [true, "Contact  required  "],
     },
 
@@ -33,41 +33,30 @@ const UserSchema = new mongoose.Schema(
       default:"CUSTOMER"
     },
 
-    address:[{
-      type:mongoose.Schema.Types.ObjectId,
-      ref:"adresses"
-    }],
+    address:{
+      type: [mongoose.Schema.Types.Mixed],
+    },
 
     paymentInfo:[{
       type:mongoose.Schema.Types.ObjectId,
       ref:"paymentInfo"
     }],
 
-    ratings:[{
-      type:mongoose.Schema.Types.ObjectId,
-      ref:"ratings"
-    }],
-
-    reviews:[{
-      type:mongoose.Schema.Types.ObjectId,
-      ref:"reviews"
-    }],
-
-    isAdmin: {
-      type: String,
-      default: false,
+    orders: {
+      type: [mongoose.Schema.Types.Mixed],
     },
 
-    Products:[{
-      type:mongoose.Schema.Types.ObjectId,
-      ref:"Product"
-    }],
-
+    
     Queries:[{
       type:mongoose.Schema.Types.ObjectId,
       ref:"Query"
     }]
 
+    // Products:[{
+    //   type:mongoose.Schema.Types.ObjectId,
+    //   ref:"Product"
+    // }],
+    
     // OtpData:[{
     //   type:mongoose.Schema.Types.ObjectId,
     //   ref:"otp"

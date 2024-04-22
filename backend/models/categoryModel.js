@@ -1,17 +1,16 @@
 const mongoose = require("mongoose");
 
 const categoryShema = new mongoose.Schema({
-    name: {
+    label: {
         type: String,
         required: true,
-        maxlength:50,
         unique: true
     },
-
-    // parentCategory:{
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref:"categories"
-    // },
+    value: {
+        type: String,
+        required: true,
+        unique: true
+    },
 
 });
 
